@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OMNI</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial;
+    }
+
+    body {
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(135deg, #b8ffd8, #63d3ff);
+      overflow: hidden;
+    }
+
+    .card {
+      width: 340px;
+      background: rgba(255,255,255,.35);
+      backdrop-filter: blur(14px);
+      border-radius: 24px;
+      padding: 20px;
+      animation: pop .8s;
+    }
+
+    @keyframes pop {
+      from {
+        opacity: 0;
+        transform: scale(.9);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    h1 {
+      text-align: center;
+      color: #0A84FF;
+    }
+
+    input,
+    button {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border: none;
+      border-radius: 12px;
+    }
+
+    button {
+      background: linear-gradient(90deg, #1AD66C, #159CFF);
+      color: white;
+      font-weight: bold;
+    }
+
+    #dashboard {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: white;
+      padding: 25px;
+      animation: fade .8s;
+    }
+
+    @keyframes fade {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    .flag {
+      width: 120px;
+      height: 80px;
+      margin: 10px auto;
+      animation: wave 2s infinite ease-in-out;
+    }
+
+    @keyframes wave {
+      0%, 100% {
+        transform: rotate(-2deg);
+      }
+
+      50% {
+        transform: rotate(2deg);
+      }
+    }
+
+    .chat {
+      height: 220px;
+      background: #f3f7fb;
+      border-radius: 14px;
+      overflow: auto;
+      padding: 10px;
+      margin: 10px 0;
+    }
+
+    .msg {
+      margin: 6px 0;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="card" id="login">
+
+    <h1>🤖 OMNI</h1>
+
+    <h3>Inscription</h3>
+
+    <input id="newEmail" placeholder="Email">
+    <input id="newPass" type="password" placeholder="Mot de passe">
+
+    <button onclick="inscription()">S'inscrire</button>
+
+    <h3>Connexion</h3>
+
+    <input id="email" placeholder="Email">
+    <input id="pass" type="password" placeholder="Mot de passe">
+
+    <button onclick="connexion()">Entrer</button>
+
+    <p id="etat"></p>
+
+  </div>
+
+
+  <div id="dashboard">
+
+    <svg class="flag" viewBox="0 0 120 80">
+      <rect width="120" height="40" fill="#EF2B2D"/>
+      <rect y="40" width="120" height="40" fill="#009E49"/>
+      <polygon
+        points="60,18 66,34 83,34 69,45 74,62 60,52 46,62 51,45 37,34 54,34"
+        fill="#FCD116"
+      />
+    </svg>
+
+    <h2 style="text-align:center;color:#111;">
+      Bienvenue sur OMNI
+    </h2>
+
+    <p style="text-align:center;color:#666;">
+      L'IA à tout faire
+    </p>
+
+    <div class="chat" id="chat">
+      <div class="msg">
+        <b>OMNI :</b> Bonjour 👋
+      </div>
+    </div>
+
+    <input id="question" placeholder="Pose une question...">
+
+    <button onclick="envoyer()">Envoyer</button>
+
+  </div>
+
+
+  <script>
+
+    let compte = {
+      email: "",
+      pass: ""
+    };
+
+
+    function inscription() {
+
+      compte.email = newEmail.value;
+      compte.pass = newPass.value;
+
+      etat.innerHTML = "✅ Compte créé";
+    }
+
+
+    function connexion() {
+
+      if (
+        email.value === compte.email &&
+        pass.value === compte.pass
+      ) {
+
+        login.style.display = "none";
+        dashboard.style.display = "block";
+
+      } else {
+
+        etat.innerHTML = "❌ Identifiants incorrects";
+
+      }
+    }
+
+
+    async function envoyer() {
+
+      let q = question.value;
+
+      if (q.trim() === "") {
+        return;
+      }
+
+      chat.innerHTML +=
+        "<p><b>Toi :</b> " + q + "</p>";
+
+      chat.innerHTML +=
+        "<p><b>OMNI :</b> Réflexion... 🤔</p>";
+
+      try {
+
+        let reponse = await fetch("/api/chat", {
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json"
+          },
+
+          body: JSON.stringify({
+            question: q
+          })
+        });
+
+        let data = await reponse.json();
+
+        chat.innerHTML +=
+          "<p><b>OMNI :</b> " +
+          data.reponse +
+          "</p>";
+
+      } catch (erreur) {
+
+        chat.innerHTML +=
+          "<p><b>OMNI :</b> ❌ Erreur de connexion.</p>";
+
+      }
+
+      question.value = "";
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+  </script>
+
+</body>
+
+</html>
